@@ -26,6 +26,10 @@ struct Video_format {
 	int height;
 };
 
+/**
+ * @brief A collection of error codes from cuda.h, with a label so we can print
+ * them in our debug messages
+*/
 std::map<int, std::string> cuda_errors = {
 	{CUDA_ERROR_INVALID_VALUE, "CUDA_ERROR_INVALID_VALUE"},
 	{CUDA_ERROR_INVALID_CONTEXT, "CUDA_ERROR_INVALID_CONTEXT"}
