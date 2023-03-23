@@ -20,7 +20,7 @@ message(STATUS "Found NV12 SDK at: ${NV12_SDK_ROOT}")
 # Add source to this project's executable.
 add_executable (test-nvidia-codec)
 
-target_sources(test-nvidia-codec PRIVATE "main.cpp")
+target_sources(test-nvidia-codec PRIVATE "main.cpp" "decoder.cpp" "demuxer.cpp")
 
 target_include_directories(test-nvidia-codec 
 	PRIVATE
