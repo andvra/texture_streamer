@@ -76,7 +76,7 @@ bool Decoder::init() {
 	// TODO: Found this flag is used in the AppDecGL sample, so I copied it
 	unsigned int context_flags = CU_CTX_SCHED_BLOCKING_SYNC;
 
-	// TODO: Add cuDeviceGetCount
+	// TODO: Add cuDeviceGetCount?
 	std::vector<fn_with_label> fns = {
 		{"Initializing CUDA",				[]() { return cuInit(0); }},
 		{"Printing device info",			[this]() { print_device_info(); return CUDA_SUCCESS; }},
