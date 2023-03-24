@@ -6,11 +6,16 @@ find_package(CUDAToolkit REQUIRED)
 find_package(FFmpeg REQUIRED)
 
 if(NOT DEFINED ENV{NV12_SDK_ROOT})
-    message(FATAL_ERROR "No NV12 SDK found. Set the environment variable NV12_SDK_ROOT, eg. C:/dev/Video_Codec_SDK_12.0.16")
+    message(FATAL_ERROR "Environment variable NV12_SDK_ROOT not set. Should be the path to the Video codec SDK, eg. C:/dev/Video_Codec_SDK_12.0.16")
 endif()
 
 # Make sure to convert path to using front slashes, so CMAKE can handle it
 file(TO_CMAKE_PATH $ENV{NV12_SDK_ROOT} NV12_SDK_ROOT)
+
+if(NOT EXISTS ${NV12_SDK_ROOT})
+	message(FATAL_ERROR "No NV12 SDK found at ${NV12_SDK_ROOT}")
+endif()
+
 set(NV12_INCLUDE_PATH ${NV12_SDK_ROOT}/Interface)
 set(NV12_LIB_PATH ${NV12_SDK_ROOT}/lib/x64/)
 set(NV12_LIBS ${NV12_LIB_PATH}/nvcuvid.lib)

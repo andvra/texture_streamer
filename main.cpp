@@ -24,7 +24,7 @@
 
 int main()
 {
-	const char* input_file = R"(C:\Users\andre\Downloads\Tutorial1.mp4)";
+	const char* input_file = R"(d:\downloads\Tutorial1.mp4)";
 
 	Demuxer demuxer;
 	Packet_data packet_data;

@@ -21,9 +21,9 @@ struct Video_format {
 	/**
 	 * @brief Eg. 0 for 8-bit or 2 for 10-bit
 	*/
-	int bit_depth_minus_8;
-	int width;
-	int height;
+	unsigned int bit_depth_minus_8;
+	unsigned int width;
+	unsigned int height;
 };
 
 /**

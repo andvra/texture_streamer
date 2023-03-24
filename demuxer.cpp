@@ -83,4 +83,5 @@ bool Demuxer::demux(Packet_data* packet_data) {
 	packet_data->size = packet_filtered->buf->size;
 	packet_data->data = packet_filtered->buf->data;
 
+	return true;
 }
