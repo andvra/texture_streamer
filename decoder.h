@@ -6,6 +6,8 @@ struct _CUVIDDECODECAPS;
 typedef struct _CUVIDDECODECAPS CUVIDDECODECAPS;
 struct Video_format;
 
+struct Stream_info;
+
 /**
  * @brief See guide for NV12 decoding here: https://docs.nvidia.com/video-codec-sdk/nvdec-video-decoder-api-prog-guide/index.html
 */
@@ -16,9 +18,10 @@ public:
 
 	/**
 	 * @brief Initializes cuvid decoding for a file with the given format
+	 * @param stream_info Information about the stream
 	 * @return True on success, false otherwise
 	*/
-	bool init();
+	bool init(const Stream_info& stream_info);
 
 	/**
 	 * @brief Tries to decode the given data

@@ -7,6 +7,7 @@
 #include <nvcuvid.h>
 
 #include "decoder.h"
+#include "stream_info.h"
 
 // TODO: These should be member variables instead
 CUvideoparser video_parser;
@@ -15,6 +16,11 @@ CUVIDDECODECAPS decode_capabilities = {};
 CUcontext cuda_context;
 CUdevice cuda_device;
 
+/**
+ * @brief Used for convenience instead of Stream_info. This struct holds
+ * all the data types needed for the decoder, so it's enough to convert once,
+ * ie. when this struct is filled
+*/
 struct Video_format {
 	cudaVideoCodec video_codec;
 	cudaVideoChromaFormat chroma_format;
@@ -56,14 +62,33 @@ Decoder::~Decoder() {
 	cuvidDestroyVideoParser(video_parser);
 }
 
-bool Decoder::init() {
-	// TODO: Initialize these parameters based on video metadata
+bool Decoder::init(const Stream_info& stream_info) {
+	// More conversions can be found in function FFmpeg2NvCodecId here: https://github.com/NVIDIA/video-sdk-samples/blob/master/Samples/Utils/FFmpegDemuxer.h
+	std::map<Codec_id, cudaVideoCodec> codec_map = {
+		{Codec_id::h264, cudaVideoCodec::cudaVideoCodec_H264},
+		{Codec_id::hevc, cudaVideoCodec::cudaVideoCodec_HEVC},
+		{Codec_id::av1, cudaVideoCodec::cudaVideoCodec_AV1}
+	};
+	std::map<Pixel_format, cudaVideoChromaFormat> pixel_format_map = {
+		{Pixel_format::yuv420, cudaVideoChromaFormat::cudaVideoChromaFormat_420}
+	};
+
+	if (codec_map.count(stream_info.codec_id) == 0) {
+		std::cout << "Don't have a codec corresponding to codec_id " << static_cast<int>(stream_info.codec_id) << " (yet)" << std::endl;
+		return false;
+	}
+
+	if (pixel_format_map.count(stream_info.pixel_format) == 0) {
+		std::cout << "Don't have a chroma format corresponding to pixel_format " << static_cast<int>(stream_info.pixel_format) << " (yet)" << std::endl;
+		return false;
+	}
+
 	Video_format video_format = {
-		cudaVideoCodec::cudaVideoCodec_H264,
-		cudaVideoChromaFormat::cudaVideoChromaFormat_420,
-		0,
-		1920 * 2,
-		1080 * 2
+		codec_map[stream_info.codec_id],
+		pixel_format_map[stream_info.pixel_format],
+		stream_info.bits_per_raw_pixel - 8,
+		stream_info.width,
+		stream_info.height
 	};
 
 	typedef std::function<int()> decoder_fn;

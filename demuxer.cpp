@@ -1,5 +1,6 @@
 #include <iostream>
 #include <functional>
+#include <map>
 
 extern "C"
 {
@@ -8,6 +9,11 @@ extern "C"
 }
 
 #include "demuxer.h"
+#include "stream_info.h"
+#include "utils.h"
+
+template Codec_id get_from_map(std::map<AVCodecID, Codec_id>, AVCodecID, Codec_id);
+template Pixel_format get_from_map(std::map<AVPixelFormat, Pixel_format>, AVPixelFormat, Pixel_format);
 
 Demuxer::Demuxer() {}
 
@@ -18,7 +24,32 @@ Demuxer::~Demuxer() {
 	avformat_close_input(&format_context);
 }
 
-bool Demuxer::init(const char* input_file) {
+Stream_info Demuxer::make_stream_info() {
+	Stream_info stream_info;
+
+	std::map<AVCodecID, Codec_id> codec_map = {
+		{AVCodecID::AV_CODEC_ID_H264, Codec_id::h264},
+		{AVCodecID::AV_CODEC_ID_HEVC, Codec_id::hevc},
+		{AVCodecID::AV_CODEC_ID_AV1, Codec_id::av1}
+	};
+
+	std::map<AVPixelFormat, Pixel_format> pixel_format_map = {
+		{AVPixelFormat::AV_PIX_FMT_YUV420P, Pixel_format::yuv420}
+	};
+
+	// For video, this variable corresponds to an item in the AVPixelFormat enum. See comment on parameter "format"
+	auto pixel_format = static_cast<AVPixelFormat>(format_context->streams[idx_video_stream]->codecpar->format);
+
+	stream_info.codec_id = get_from_map(codec_map, format_context->streams[idx_video_stream]->codecpar->codec_id, Codec_id::unsupported);
+	stream_info.pixel_format = get_from_map(pixel_format_map, pixel_format, Pixel_format::unsupported);
+	stream_info.height = format_context->streams[idx_video_stream]->codecpar->height;
+	stream_info.width = format_context->streams[idx_video_stream]->codecpar->width;
+	stream_info.bits_per_raw_pixel = format_context->streams[0]->codecpar->bits_per_raw_sample;
+
+	return stream_info;
+}
+
+bool Demuxer::init(const char* input_file, Stream_info* stream_info) {
 	format_context = avformat_alloc_context();
 
 	if (avformat_open_input(&format_context, input_file, nullptr, nullptr) < 0) {
@@ -31,11 +62,15 @@ bool Demuxer::init(const char* input_file) {
 		return false;
 	}
 
-	// TODO: Instead, find out what stream to use
-	idx_video_stream = 0;
+	// NB we only take the first stream, will miss out if there are multiple
+	for (unsigned int i = 0; i < format_context->nb_streams; i++) {
+		if (format_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+			idx_video_stream = i;
+			break;
+		}
+	} 
 
-	// TODO: Is 0=video, 1=audio here?
-	av_dump_format(format_context, 0, input_file, 0);
+	av_dump_format(format_context, idx_video_stream, input_file, 0);
 
 	packet_original = av_packet_alloc();
 	packet_filtered = av_packet_alloc();
@@ -51,6 +86,10 @@ bool Demuxer::init(const char* input_file) {
 	av_bsf_alloc(bitstream_filter, &bitstream_filter_context);
 	avcodec_parameters_copy(bitstream_filter_context->par_in, format_context->streams[0]->codecpar); // TODO Right now, we hard-code video stream index here,
 	av_bsf_init(bitstream_filter_context);
+
+	if (stream_info) {
+		*stream_info = make_stream_info();
+	}
 
 	return true;
 }
