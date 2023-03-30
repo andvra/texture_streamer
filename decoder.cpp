@@ -41,19 +41,42 @@ std::map<int, std::string> cuda_errors = {
 	{CUDA_ERROR_INVALID_CONTEXT, "CUDA_ERROR_INVALID_CONTEXT"}
 };
 
-// See definition at 433 in nvcuvid.h. There, it's called PFNVIDSEQUENCECALLBACK
+/**
+ * @brief See definition at 433 in nvcuvid.h. There, it's called PFNVIDSEQUENCECALLBACK
+ * @param user_data 
+ * @param format 
+ * @return 
+*/
 int sequence_callback(void* user_data, CUVIDEOFORMAT* format) {
 	return  format->min_num_decode_surfaces;
 }
 
+/**
+ * @brief 
+ * @param user_data Can be set in CUVIDPARSERPARAMS, when adding the callback (this function)
+ * @param params 
+ * @return 
+*/
 int decode_callback(void* user_data, CUVIDPICPARAMS* params) {
 	return 1;
 }
 
+/**
+ * @brief 
+ * @param user_data Can be set in CUVIDPARSERPARAMS, when adding the callback (this function)
+ * @param display_info 
+ * @return 
+*/
 int display_callback(void* user_data, CUVIDPARSERDISPINFO* display_info) {
 	return 1;
 }
 
+/**
+ * @brief More info on Supplemental Enhancement Information: https://www.magewell.com/blog/82/detail
+ * @param user_data Can be set in CUVIDPARSERPARAMS, when adding the callback (this function)
+ * @param display_info 
+ * @return 
+*/
 int get_sei_callback(void* user_data, CUVIDSEIMESSAGEINFO* display_info) {
 	return 1;
 }
