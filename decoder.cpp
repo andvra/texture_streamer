@@ -42,6 +42,35 @@ std::map<int, std::string> cuda_errors = {
 };
 
 /**
+ * @brief Print info about the decoding device
+*/
+void print_device_info();
+
+/**
+ * @brief Creates a decoder
+ * @param video_format Video format
+ * @result Cuvid result code
+*/
+CUresult create_decoder(const Video_format& video_format);
+
+/**
+ * @brief Gets the decode capabilities. Useful if you look for specific decode features
+ * @param video_format Video format
+ * @param decode_capabilities Reference to decode capabilities result object
+ * @return Cuvid result code
+*/
+CUresult get_decode_cababilities(const Video_format& video_format, CUVIDDECODECAPS& decode_capabilities);
+
+/**
+ * @brief Initialize a video parser object
+ * @param decoder The decoder calling this function
+ * @param video_format Video format
+ * @param video_parser Vide parser
+ * @return Cuvid result code
+*/
+CUresult create_video_parser(Decoder* decoder, const Video_format& video_format, void*& video_parser);
+
+/**
  * @brief See definition at 433 in nvcuvid.h. There, it's called PFNVIDSEQUENCECALLBACK
  * @param user_data Should be a pointer to an instance of the Decoder class
  * @param format Format structure, set by Nvidia
@@ -135,7 +164,7 @@ bool Decoder::init(const Stream_info& stream_info) {
 		{"Getting device context",			[&context_flags]() { return cuCtxCreate_v2(&cuda_context, context_flags, cuda_device); }},
 		{"Getting API version",				[&api_version]() { return cuCtxGetApiVersion(cuda_context, &api_version); }},
 		{"Printing API version",			[&api_version]() { std::cout << "API version: " << api_version << std::endl; return CUDA_SUCCESS; }},
-		{"Creating video parser",			[this, &video_format]() { return create_video_parser(video_format, video_parser); }},
+		{"Creating video parser",			[this, &video_format]() { return create_video_parser(this, video_format, video_parser); }},
 		{"Getting decoder capabilities",	[this, &video_format]() { return get_decode_cababilities(video_format, decode_capabilities); }},
 		{"Creating decoder",				[this, &video_format]() { return create_decoder(video_format); }}
 	};
@@ -155,7 +184,7 @@ bool Decoder::init(const Stream_info& stream_info) {
 	return true;
 }
 
-void Decoder::print_device_info() {
+void print_device_info() {
 	const unsigned int max_name_length = 100;
 	int device_count;
 	CUdevice cuda_device;
@@ -170,13 +199,13 @@ void Decoder::print_device_info() {
 	}
 }
 
-CUresult Decoder::create_video_parser(const Video_format& video_format, void*& video_parser) {
+CUresult create_video_parser(Decoder* decoder, const Video_format& video_format, void*& video_parser) {
 	CUVIDPARSERPARAMS params = {};
 
 	params.CodecType = video_format.video_codec;
 	params.ulMaxNumDecodeSurfaces = 1; // This is a dummy value. The actual value is received in pfnSequenceCallback
 	params.ulMaxDisplayDelay = 0;
-	params.pUserData = this;
+	params.pUserData = decoder;
 	params.pfnSequenceCallback = sequence_callback_proc;
 	params.pfnDecodePicture = decode_callback_proc;
 	params.pfnDisplayPicture = display_callback_proc;
@@ -185,7 +214,7 @@ CUresult Decoder::create_video_parser(const Video_format& video_format, void*& v
 	return cuvidCreateVideoParser(&video_parser, &params);
 }
 
-CUresult Decoder::get_decode_cababilities(const Video_format& video_format, CUVIDDECODECAPS& decode_capabilities) {
+CUresult get_decode_cababilities(const Video_format& video_format, CUVIDDECODECAPS& decode_capabilities) {
 	decode_capabilities.eCodecType = video_format.video_codec;
 	decode_capabilities.eChromaFormat = video_format.chroma_format;
 	decode_capabilities.nBitDepthMinus8 = video_format.bit_depth_minus_8;
@@ -208,7 +237,7 @@ CUresult Decoder::get_decode_cababilities(const Video_format& video_format, CUVI
 	return ret;
 }
 
-CUresult Decoder::create_decoder(const Video_format& video_format) {
+CUresult create_decoder(const Video_format& video_format) {
 	CUVIDDECODECREATEINFO create_info = {};
 
 	create_info.bitDepthMinus8 = video_format.bit_depth_minus_8;
