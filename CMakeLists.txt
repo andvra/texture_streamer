@@ -1,9 +1,22 @@
-﻿cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.25)
 
 project ("test-nvidia-codec")
 
 find_package(CUDAToolkit REQUIRED)
-find_package(FFmpeg REQUIRED)
+if(WIN32)
+	find_package(FFmpeg REQUIRED)
+else()
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+		libavdevice
+		libavfilter
+		libavformat
+		libavcodec
+		libswresample
+		libswscale
+		libavutil
+	)
+endif()
 
 if(NOT DEFINED ENV{NV12_SDK_ROOT})
     message(FATAL_ERROR "Environment variable NV12_SDK_ROOT not set. Should be the path to the Video codec SDK, eg. C:/dev/Video_Codec_SDK_12.0.16")
@@ -16,9 +29,15 @@ if(NOT EXISTS ${NV12_SDK_ROOT})
 	message(FATAL_ERROR "No NV12 SDK found at ${NV12_SDK_ROOT}")
 endif()
 
-set(NV12_INCLUDE_PATH ${NV12_SDK_ROOT}/Interface)
-set(NV12_LIB_PATH ${NV12_SDK_ROOT}/lib/x64/)
-set(NV12_LIBS ${NV12_LIB_PATH}/nvcuvid.lib)
+if(WIN32)
+	set(NV12_INCLUDE_PATH ${NV12_SDK_ROOT}/Interface)
+	set(NV12_LIB_PATH ${NV12_SDK_ROOT}/lib/x64/)
+	set(NV12_LIBS ${NV12_LIB_PATH}/nvcuvid.lib)
+else()
+	set(NV12_INCLUDE_PATH ${NV12_SDK_ROOT}/Interface)
+	set(NV12_LIB_PATH ${NV12_SDK_ROOT}/Lib/linux/stubs/x86_64)
+	set(NV12_LIBS ${NV12_LIB_PATH}/libnvcuvid.so)
+endif()
 
 message(STATUS "Found NV12 SDK at: ${NV12_SDK_ROOT}")
 
@@ -34,13 +53,12 @@ target_include_directories(test-nvidia-codec
 		${FFMPEG_INCLUDE_DIRS}
 )
 
-MESSAGE(STATUS "FFMPEG_LIBRARIES: ${FFMPEG_LIBRARIES}")
-
 target_link_libraries(test-nvidia-codec 
 	PRIVATE
 		${NV12_LIBS}
 		CUDA::cuda_driver
 		${FFMPEG_LIBRARIES}
+		PkgConfig::LIBAV
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
