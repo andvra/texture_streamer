@@ -43,41 +43,43 @@ std::map<int, std::string> cuda_errors = {
 
 /**
  * @brief See definition at 433 in nvcuvid.h. There, it's called PFNVIDSEQUENCECALLBACK
- * @param user_data 
- * @param format 
+ * @param user_data Should be a pointer to an instance of the Decoder class
+ * @param format Format structure, set by Nvidia
  * @return 
 */
-int sequence_callback(void* user_data, CUVIDEOFORMAT* format) {
-	return  format->min_num_decode_surfaces;
+int sequence_callback_proc(void* user_data, CUVIDEOFORMAT* format) {
+	Decoder* decoder = static_cast<Decoder*>(user_data);
+
+	return format->min_num_decode_surfaces;
 }
 
 /**
  * @brief 
- * @param user_data Can be set in CUVIDPARSERPARAMS, when adding the callback (this function)
- * @param params 
+ * @param user_data Should be a pointer to an instance of the Decoder class
+ * @param params Parameter structure, set by Nvidia
  * @return 
 */
-int decode_callback(void* user_data, CUVIDPICPARAMS* params) {
+int decode_callback_proc(void* user_data, CUVIDPICPARAMS* params) {
 	return 1;
 }
 
 /**
  * @brief 
- * @param user_data Can be set in CUVIDPARSERPARAMS, when adding the callback (this function)
- * @param display_info 
+ * @param user_data Should be a pointer to an instance of the Decoder class
+ * @param display_info Display info structure, set by Nvidia
  * @return 
 */
-int display_callback(void* user_data, CUVIDPARSERDISPINFO* display_info) {
+int display_callback_proc(void* user_data, CUVIDPARSERDISPINFO* display_info) {
 	return 1;
 }
 
 /**
  * @brief More info on Supplemental Enhancement Information: https://www.magewell.com/blog/82/detail
- * @param user_data Can be set in CUVIDPARSERPARAMS, when adding the callback (this function)
- * @param display_info 
+ * @param user_data Should be a pointer to an instance of the Decoder class
+ * @param message_info Message info structure, set by Nvidia
  * @return 
 */
-int get_sei_callback(void* user_data, CUVIDSEIMESSAGEINFO* display_info) {
+int get_sei_callback_proc(void* user_data, CUVIDSEIMESSAGEINFO* message_info) {
 	return 1;
 }
 
@@ -154,15 +156,16 @@ bool Decoder::init(const Stream_info& stream_info) {
 }
 
 void Decoder::print_device_info() {
+	const unsigned int max_name_length = 100;
 	int device_count;
 	CUdevice cuda_device;
-	char device_name[100];
+	char device_name[max_name_length];
 
 	auto res = cuDeviceGetCount(&device_count);
 
 	for (int idx_device = 0; idx_device < device_count; idx_device++) {
 		res = cuDeviceGet(&cuda_device, idx_device);
-		cuDeviceGetName(device_name, 100, cuda_device);
+		cuDeviceGetName(device_name, max_name_length, cuda_device);
 		std::cout << "Device name: " << device_name << std::endl;
 	}
 }
@@ -173,10 +176,11 @@ CUresult Decoder::create_video_parser(const Video_format& video_format, void*& v
 	params.CodecType = video_format.video_codec;
 	params.ulMaxNumDecodeSurfaces = 1; // This is a dummy value. The actual value is received in pfnSequenceCallback
 	params.ulMaxDisplayDelay = 0;
-	params.pfnSequenceCallback = sequence_callback;
-	params.pfnDecodePicture = decode_callback;
-	params.pfnDisplayPicture = display_callback;
-	params.pfnGetSEIMsg = get_sei_callback;
+	params.pUserData = this;
+	params.pfnSequenceCallback = sequence_callback_proc;
+	params.pfnDecodePicture = decode_callback_proc;
+	params.pfnDisplayPicture = display_callback_proc;
+	params.pfnGetSEIMsg = get_sei_callback_proc;
 
 	return cuvidCreateVideoParser(&video_parser, &params);
 }
