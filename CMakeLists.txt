@@ -1,10 +1,10 @@
-﻿cmake_minimum_required (VERSION 3.25)
+﻿cmake_minimum_required (VERSION 3.10)
 
 project ("test-nvidia-codec")
 
 find_package(CUDAToolkit REQUIRED)
 if(WIN32)
-	find_package(FFmpeg REQUIRED)
+	find_package(FFMPEG REQUIRED)
 else()
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
@@ -53,12 +53,15 @@ target_include_directories(test-nvidia-codec
 		${FFMPEG_INCLUDE_DIRS}
 )
 
+if(WIN32)
+	set(ALL_LIBS ${NV12_LIBS} CUDA::cuda_driver ${FFMPEG_LIBRARIES})
+else()
+	set(ALL_LIBS ${NV12_LIBS} CUDA::cuda_driver PkgConfig::LIBAV)
+endif()
+
 target_link_libraries(test-nvidia-codec 
 	PRIVATE
-		${NV12_LIBS}
-		CUDA::cuda_driver
-		${FFMPEG_LIBRARIES}
-		PkgConfig::LIBAV
+		${ALL_LIBS}
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
