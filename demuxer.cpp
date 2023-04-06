@@ -6,6 +6,7 @@ extern "C"
 {
 #include <libavformat/avformat.h>
 #include <libavcodec/codec_par.h>
+#include <libavcodec/bsf.h>
 }
 
 #include "demuxer.h"
@@ -119,7 +120,7 @@ bool Demuxer::demux(Packet_data* packet_data) {
 	av_bsf_send_packet(bitstream_filter_context, packet_original);
 	av_bsf_receive_packet(bitstream_filter_context, packet_filtered);
 
-	packet_data->size = packet_filtered->buf->size;
+	packet_data->size = static_cast<int>(packet_filtered->buf->size);
 	packet_data->data = packet_filtered->buf->data;
 
 	return true;
