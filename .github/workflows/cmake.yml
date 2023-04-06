@@ -20,6 +20,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
   
+    # See https://github.com/marketplace/actions/check-artifact-existence
+    - uses: xSAVIKx/artifact-exists-action@v0
+      id: check-vcpkg-artifact-exists
+      with:
+        name: 'vcpkg-zip'
+
     - name: Checking var (false)
       if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
       run: echo "Artifact does not exists"
@@ -37,13 +43,7 @@ jobs:
     - run: echo "Installed cuda version is:${{steps.cuda-toolkit.outputs.cuda}}"
     - run: echo "Cuda install location:${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
     - run: nvcc -V
-    
-    # See https://github.com/marketplace/actions/check-artifact-existence
-    - uses: xSAVIKx/artifact-exists-action@v0
-      id: check-vcpkg-artifact-exists
-      with:
-        name: 'vcpkg-zip'
-    
+       
     - uses: lukka/get-cmake@latest
     
       # See https://github.com/marketplace/actions/run-vcpkg
