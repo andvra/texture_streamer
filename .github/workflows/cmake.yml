@@ -19,6 +19,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+  
+    - name: Checking var (false)
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
+      run: echo "Artifact does not exists"
+
+    - name: Checking var (true)
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true}}
+      run: echo "Artifact does exists"
     
       # See https://github.com/Jimver/cuda-toolkit
     - uses: Jimver/cuda-toolkit@v0.2.10
@@ -37,14 +45,6 @@ jobs:
         name: 'vcpkg-zip'
     
     - uses: lukka/get-cmake@latest
-  
-    - name: Checking var (false)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
-      run: echo "Artifact does not exists"
-
-    - name: Checking var (true)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true}}
-      run: echo "Artifact does exists"
     
       # See https://github.com/marketplace/actions/run-vcpkg
     - name: Setup vcpkg (it does not install any package yet)
