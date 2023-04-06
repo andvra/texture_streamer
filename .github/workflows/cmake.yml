@@ -37,10 +37,18 @@ jobs:
         name: 'vcpkg-zip'
     
     - uses: lukka/get-cmake@latest
+  
+    - name: Checking var (false)
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
+      run: echo "Artifact does not exists"
+
+    - name: Checking var (true)
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true}}
+      run: echo "Artifact does exists"
     
       # See https://github.com/marketplace/actions/run-vcpkg
     - name: Setup vcpkg (it does not install any package yet)
-      if: ${{ !steps.check-vcpkg-artifact-exists.outputs.exists }}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
       uses: lukka/run-vcpkg@v11
       with:
         # This is the default location of the directory containing vcpkg sources.
@@ -67,25 +75,26 @@ jobs:
         
     # See https://github.com/marketplace/actions/action-zip
     - uses: montudor/action-zip@v1
-      if: ${{ !steps.check-vcpkg-artifact-exists.outputs.exists }}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false }}
       with:
         args: zip -qq -r vcpkg.zip vcpkg
         
     # See https://github.com/actions/upload-artifact
     - uses: actions/upload-artifact@v3
-      if: ${{ !steps.check-vcpkg-artifact-exists.outputs.exists }}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false }}
       with:
         name: vcpkg-zip
         path: vcpkg.zip
 
     # See https://github.com/actions/download-artifact
     - uses: actions/download-artifact@v3
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists }}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true }}
       with:
         name: vcpkg-zip
         
     # See https://github.com/marketplace/actions/action-zip
     - uses: montudor/action-zip@v1
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true }}
       with:
         args: unzip -qq vcpkg.zip -d vcpkg
       
