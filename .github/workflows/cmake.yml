@@ -30,8 +30,10 @@ jobs:
     - name: Print Ninja path
       run: |
         echo "Path: $env:Path"
-        if((Get-Command ninja -ErrorAction SilentlyContinue) -eq $null) {echo Ninja does not exist}
-        if((Get-Command ninja-1.10.0 -ErrorAction SilentlyContinue) -eq $null) {echo Ninja does not exist}
+        if((Get-Command ninja -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find ninja"}
+        if((Get-Command ninja-1.10.0 -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find ninja-1.10.0"}
+        Get-Command ninja -ErrorAction SilentlyContinue
+        Get-Command ninja-1.10.0 -ErrorAction SilentlyContinue
   
     # See https://github.com/marketplace/actions/check-artifact-existence
     - uses: xSAVIKx/artifact-exists-action@v0
@@ -71,7 +73,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/xxvzkIjQVxBT"  -OutFile ../vcpkg-ffmpeg.zip
+        Invoke-WebRequest -Uri "https://file.io/ZPCWxPv1BgNt"  -OutFile ../vcpkg-ffmpeg.zip
         Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ..
         Get-Location
         dir
