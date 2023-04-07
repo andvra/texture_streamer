@@ -58,8 +58,8 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/By0aoPmpzYkw"  -OutFile ../vcpkg-ffmpeg.zip
-        Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ../vcpkg
+        Invoke-WebRequest -Uri "https://file.io/Yi5ikx8IXYdR"  -OutFile ../vcpkg-ffmpeg.zip
+        Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ..
         Get-Location
         dir
 
@@ -143,7 +143,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -S . --preset=x64-debug
       env:
-        CMAKE_TOOLCHAIN_FILE: ../vcpkg/script/buildsystems/vcpkg.cmake
+        CMAKE_TOOLCHAIN_FILE: ../vcpkg-ffmpeg/script/buildsystems/vcpkg.cmake
 
     - name: Build
       # Build your program with the given configuration
