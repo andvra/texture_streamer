@@ -27,23 +27,29 @@ jobs:
         name: 'vcpkg-zip'
 
     - name: Checking var (false)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs == false}}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
       run: echo "Artifact does not exists"
 
     - name: Checking var (true)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs == true}}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true}}
       run: echo "Artifact does exists"
 
     - name: Print all
       env:
         ALL_CHECK_OUTPUT: ${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}
-      run: "echo ALL_CHECK_OUTPUT is $env:ALL_CHECK_OUTPUT"
+        ASD: ${{fromJson(steps.check-vcpkg-artifact-exists.outputs).exists}}
+      run: |
+          "echo ALL_CHECK_OUTPUT is $env:ALL_CHECK_OUTPUT"
+          "echo ASD is $env:ASD"
 
-    - name: Set env
-      run: echo "GITHUB_SHA_SHORT=${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}" >> $GITHUB_ENV
-    - name: Test
-      run: "echo \"GITHUB_SHA_SHORT is $env:GITHUB_SHA_SHORT\""
-    
+    - name: Conditional1
+      if: ${{ ASD == false}}
+      run: echo "This works"
+
+    - name: Conditional2
+      if: ASD == false
+      run: echo "This works"
+   
     - name: Print GitHub Context
       run: |
           "echo GITHUB_CONTEXT is $env:GC"
