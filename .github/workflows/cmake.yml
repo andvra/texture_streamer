@@ -45,10 +45,6 @@ jobs:
     - name: Conditional1
       if: ${{ ASD == false}}
       run: echo "This works"
-
-    - name: Conditional2
-      if: ASD == false
-      run: echo "This works"
    
     - name: Print GitHub Context
       run: |
