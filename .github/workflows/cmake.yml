@@ -83,7 +83,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/Jvw3o39xKWdU"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/pCSwKp6scOtv"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
