@@ -43,10 +43,6 @@ jobs:
           "echo ASD1 is $env:ASD1"
           "echo ASD2 is $env:ASD2"
 
-    - name: Conditional1
-      if: ${{ ASD }}
-      run: echo "This works 1"
-
     - name: Conditional2
       if: ${{ $env:ASD }}
       run: echo "This works 2"
