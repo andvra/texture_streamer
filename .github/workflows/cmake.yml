@@ -37,7 +37,7 @@ jobs:
     - name: Print all
       env:
         ALL_CHECK_OUTPUT: ${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}
-        ASD: ${{ contains(fromJson(steps.check-vcpkg-artifact-exists.outputs), "exists") }}
+        ASD: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) }}
       run: |
           "echo ALL_CHECK_OUTPUT is $env:ALL_CHECK_OUTPUT"
           "echo ASD is $env:ASD"
