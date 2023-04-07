@@ -44,7 +44,7 @@ jobs:
           "echo ASD2 is $env:ASD2"
 
     - name: Conditional1
-      if: ${{ $ASD }}
+      if: ${{ ASD }}
       run: echo "This works 1"
 
     - name: Conditional2
