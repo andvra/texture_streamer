@@ -37,7 +37,7 @@ jobs:
     - name: Print all
       env:
         ALL_CHECK_OUTPUT: ${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}
-      run: echo "$ALL_CHECK_OUTPUT"
+      run: echo %ALL_CHECK_OUTPUT%
 
     - name: Set env
       run: echo "GITHUB_SHA_SHORT=${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}" >> $GITHUB_ENV
