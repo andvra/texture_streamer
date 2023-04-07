@@ -38,9 +38,13 @@ jobs:
       env:
         ALL_CHECK_OUTPUT: ${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}
         ASD: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) }}
+        ASD1: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == true }}
+        ASD2: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       run: |
           "echo ALL_CHECK_OUTPUT is $env:ALL_CHECK_OUTPUT"
           "echo ASD is $env:ASD"
+          "echo ASD1 is $env:ASD1"
+          "echo ASD2 is $env:ASD2"
 
     - name: Conditional1
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs).exists}}
