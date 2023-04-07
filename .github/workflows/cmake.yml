@@ -32,6 +32,7 @@ jobs:
         # ninja version to download. Default: 1.10.0
         version: 1.10.0
 
+    # https://github.com/marketplace/actions/enable-developer-command-prompt
     - uses: ilammy/msvc-dev-cmd@v1
   
     - name: Print cl.exe
@@ -82,7 +83,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/ZPCWxPv1BgNt"  -OutFile ../vcpkg-ffmpeg.zip
+        Invoke-WebRequest -Uri "https://file.io/Jvw3o39xKWdU"  -OutFile ../vcpkg-ffmpeg.zip
         Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ..
         Get-Location
         dir
