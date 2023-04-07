@@ -26,6 +26,12 @@ jobs:
       with:
         # ninja version to download. Default: 1.10.0
         version: 1.10.0
+
+    - name: Print Ninja path
+      run: |
+        echo "Path: $env:Path"
+        if((Get-Command ninja -ErrorAction SilentlyContinue) -eq $null) {echo Ninja does not exist}
+        if((Get-Command ninja-1.10.0 -ErrorAction SilentlyContinue) -eq $null) {echo Ninja does not exist}
   
     # See https://github.com/marketplace/actions/check-artifact-existence
     - uses: xSAVIKx/artifact-exists-action@v0
@@ -65,7 +71,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/3bvpz5i7iVz1"  -OutFile ../vcpkg-ffmpeg.zip
+        Invoke-WebRequest -Uri "https://file.io/xxvzkIjQVxBT"  -OutFile ../vcpkg-ffmpeg.zip
         Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ..
         Get-Location
         dir
