@@ -50,7 +50,7 @@ jobs:
           "echo hej"
           "echo AI is $env:AO"
       env:
-        GC: ${{ toJSON(GITHUB_CONTEXT) }}
+        GC: ${{ toJSON(github) }}
         AO: ${{ toJSON(steps.check-vcpkg-artifact-exists.outputs) }}
 
       # See https://github.com/Jimver/cuda-toolkit
