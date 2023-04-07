@@ -26,13 +26,10 @@ jobs:
       with:
         name: 'vcpkg-zip'
 
-    - name: Checking var (false)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
-      run: echo "Artifact does not exists"
-
-    - name: Checking var (true)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true}}
-      run: echo "Artifact does exists"
+    - name: Checking for artifact existance
+      run: echo "Does artifact exists? $env:ARTIFACT_EXISTS"
+      env:
+        ARTIFACT_EXISTS: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) }}
 
     - name: Print all
       env:
@@ -47,8 +44,12 @@ jobs:
           "echo ASD2 is $env:ASD2"
 
     - name: Conditional1
-      if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs).exists}}
-      run: echo "This works"
+      if: ${{ $ASD }}
+      run: echo "This works 1"
+
+    - name: Conditional2
+      if: ${{ $env:ASD }}
+      run: echo "This works 2"
    
     - name: Print GitHub Context
       run: |
