@@ -43,7 +43,7 @@ jobs:
           "echo ASD is $env:ASD"
 
     - name: Conditional1
-      if: ${{ ASD == false}}
+      if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs).exists}}
       run: echo "This works"
    
     - name: Print GitHub Context
