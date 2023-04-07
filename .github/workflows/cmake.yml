@@ -83,7 +83,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/pCSwKp6scOtv"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/dTMew5V4F28N"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
@@ -174,6 +174,12 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build out/build/x64-debug
+
+    - name: Archive build
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-files
+        path: .
 
     #- name: Test
     #  working-directory: ${{github.workspace}}/build
