@@ -20,6 +20,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
   
+    # https://github.com/marketplace/actions/setup-ninja
+    - name: Setup Ninja
+      uses: ashutoshvarma/setup-ninja@master
+      with:
+        # ninja version to download. Default: 1.10.0
+        version: 1.10.0
+  
     # See https://github.com/marketplace/actions/check-artifact-existence
     - uses: xSAVIKx/artifact-exists-action@v0
       id: check-vcpkg-artifact-exists
@@ -58,7 +65,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/Yi5ikx8IXYdR"  -OutFile ../vcpkg-ffmpeg.zip
+        Invoke-WebRequest -Uri "https://file.io/3bvpz5i7iVz1"  -OutFile ../vcpkg-ffmpeg.zip
         Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ..
         Get-Location
         dir
@@ -143,7 +150,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -S . --preset=x64-debug
       env:
-        CMAKE_TOOLCHAIN_FILE: ../vcpkg-ffmpeg/script/buildsystems/vcpkg.cmake
+        CMAKE_TOOLCHAIN_FILE: ../vcpkg-ffmpeg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       # Build your program with the given configuration
