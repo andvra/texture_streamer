@@ -55,6 +55,12 @@ jobs:
       env:
         GC: ${{ toJSON(github) }}
         AO: ${{ toJSON(steps.check-vcpkg-artifact-exists.outputs) }}
+
+    - name: Download and unzip vcpkg files
+      run: |
+        Invoke-WebRequest -Uri "https://drive.google.com/file/d/1NgsCLPYI_-FFqXe6DhuVYfAPnrV8ewZW/view?usp=sharing"  -OutFile vcpkg-ffmpeg.zip
+        Expand-Archive .\vcpkg-ffmpeg.zip -DestinationPath vcpkg
+        Get-Location
       
     - uses: lukka/get-cmake@latest
     
