@@ -20,6 +20,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
   
+    - name: Print cl.exe (before)
+      run: |   
+        if((Get-Command cl -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find cl"}
+        Get-Command cl -ErrorAction SilentlyContinue
+
     # https://github.com/marketplace/actions/setup-ninja
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
@@ -27,13 +32,17 @@ jobs:
         # ninja version to download. Default: 1.10.0
         version: 1.10.0
 
+    - uses: ilammy/msvc-dev-cmd@v1
+  
+    - name: Print cl.exe
+      run: |   
+        if((Get-Command cl -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find cl"}
+        Get-Command cl -ErrorAction SilentlyContinue
+
     - name: Print Ninja path
       run: |
-        echo "Path: $env:Path"
         if((Get-Command ninja -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find ninja"}
-        if((Get-Command ninja-1.10.0 -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find ninja-1.10.0"}
         Get-Command ninja -ErrorAction SilentlyContinue
-        Get-Command ninja-1.10.0 -ErrorAction SilentlyContinue
   
     # See https://github.com/marketplace/actions/check-artifact-existence
     - uses: xSAVIKx/artifact-exists-action@v0
