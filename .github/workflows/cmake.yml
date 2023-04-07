@@ -43,9 +43,9 @@ jobs:
           "echo ASD1 is $env:ASD1"
           "echo ASD2 is $env:ASD2"
 
-    - name: Conditional2
-      if: ${{ $env:ASD }}
-      run: echo "This works 2"
+    #- name: Conditional2
+    #  if: ${{ $env:ASD }}
+    #  run: echo "This works 2"
    
     - name: Print GitHub Context
       run: |
