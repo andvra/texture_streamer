@@ -58,10 +58,20 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/ME3pQY3uc0eE"  -OutFile vcpkg-ffmpeg.zip
-        Expand-Archive .\vcpkg-ffmpeg.zip -DestinationPath vcpkg
+        Invoke-WebRequest -Uri "https://file.io/ME3pQY3uc0eE"  -OutFile ../vcpkg-ffmpeg.zip
+        Expand-Archive ../vcpkg-ffmpeg.zip -DestinationPath ../vcpkg
         Get-Location
         dir
+
+    - name: Create log file
+      run: |
+        Get-ChildItem .. -Recurse | Out-File -FilePath .\mylog.txt
+    
+    - name: Archive log file
+      uses: actions/upload-artifact@v3
+      with:
+        name: mylog-file
+        path: .\mylog.txt
       
     - uses: lukka/get-cmake@latest
     
