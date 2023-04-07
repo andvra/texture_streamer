@@ -27,11 +27,11 @@ jobs:
         name: 'vcpkg-zip'
 
     - name: Checking var (false)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == false}}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs == false}}
       run: echo "Artifact does not exists"
 
     - name: Checking var (true)
-      if: ${{ steps.check-vcpkg-artifact-exists.outputs.exists == true}}
+      if: ${{ steps.check-vcpkg-artifact-exists.outputs == true}}
       run: echo "Artifact does exists"
 
     - name: Print all
@@ -44,7 +44,7 @@ jobs:
     - name: Test
       run: "echo GITHUB_SHA_SHORT is $env:GITHUB_SHA_SHORT"
     
-    - run: "echo $GITHUB_CONTEXT is $env:$GITHUB_CONTEXT"
+    - run: "echo GITHUB_CONTEXT is $env:GITHUB_CONTEXT"
     
       # See https://github.com/Jimver/cuda-toolkit
     - uses: Jimver/cuda-toolkit@v0.2.10
