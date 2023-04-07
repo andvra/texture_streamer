@@ -58,7 +58,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://drive.google.com/file/d/1NgsCLPYI_-FFqXe6DhuVYfAPnrV8ewZW/view?usp=sharing"  -OutFile vcpkg-ffmpeg.zip
+        Invoke-WebRequest -Uri "https://file.io/aWQlT5jZqDT8"  -OutFile vcpkg-ffmpeg.zip
         Expand-Archive .\vcpkg-ffmpeg.zip -DestinationPath vcpkg
         Get-Location
       
