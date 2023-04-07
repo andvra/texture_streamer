@@ -42,10 +42,17 @@ jobs:
     - name: Set env
       run: echo "GITHUB_SHA_SHORT=${{join(steps.check-vcpkg-artifact-exists.outputs.*, '\n')}}" >> $GITHUB_ENV
     - name: Test
-      run: "echo GITHUB_SHA_SHORT is $env:GITHUB_SHA_SHORT"
+      run: "echo \"GITHUB_SHA_SHORT is $env:GITHUB_SHA_SHORT\""
     
-    - run: "echo GITHUB_CONTEXT is $env:GITHUB_CONTEXT"
-    
+    - name: Print GitHub Context
+      run: |
+          "echo GITHUB_CONTEXT is $env:GC"
+          "echo hej"
+          "echo AI is $env:AO"
+      env:
+        GC: ${{ toJSON(GITHUB_CONTEXT) }}
+        AO: ${{ toJSON(steps.check-vcpkg-artifact-exists.outputs) }}
+
       # See https://github.com/Jimver/cuda-toolkit
     - uses: Jimver/cuda-toolkit@v0.2.10
       id: cuda-toolkit
