@@ -83,7 +83,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/TnLCJ6kvfODK"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/mgtTqyUmVe1D"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
@@ -167,11 +167,8 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: | 
-          [string]$currentpath = Get-Location
-          $parentpath = (Get-Item $currentpath).parent
-          #$nv12path = $parentpath + "/Video_Codec_SDK_12.0.16"
           [string]$nv12_path = [System.IO.Path]::GetFullPath((Join-Path $pwd '../Video_Codec_SDK_12.0.16'))
-          $env:NV12_SDK_ROOT = $nv12path
+          $env:NV12_SDK_ROOT = $nv12_path
           echo "nv12_path $nv12_path"
           echo "NV12_SDK_ROOT $env:NV12_SDK_ROOT"
           cmake -S . --preset=x64-debug
