@@ -83,7 +83,7 @@ jobs:
 
     - name: Download and unzip vcpkg files
       run: |
-        Invoke-WebRequest -Uri "https://file.io/Y1S0IZTAJzv0"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/TnLCJ6kvfODK"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
@@ -172,8 +172,8 @@ jobs:
           #$nv12path = $parentpath + "/Video_Codec_SDK_12.0.16"
           [string]$nv12_path = [System.IO.Path]::GetFullPath((Join-Path $pwd '../Video_Codec_SDK_12.0.16'))
           $env:NV12_SDK_ROOT = $nv12path
-          echo "$nv12_path: $nv12_path"
-          echo "NV12_SDK_ROOT: $env:NV12_SDK_ROOT"
+          echo "nv12_path $nv12_path"
+          echo "NV12_SDK_ROOT $env:NV12_SDK_ROOT"
           cmake -S . --preset=x64-debug
       env:
         CMAKE_TOOLCHAIN_FILE: ../vcpkg-ffmpeg/scripts/buildsystems/vcpkg.cmake
