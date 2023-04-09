@@ -20,7 +20,22 @@ jobs:
     steps:
     - uses: actions/checkout@v3
   
+    - run: $pwd
+    - run: $toppath = split-path . -leaf
+    - run: cd ..
+    - run: $pwd
+    - run: cd $toppath
+    - run: $pwd
+
     - name: Print cl.exe (before)
+      run: |   
+        if((Get-Command cl -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find cl"}
+        Get-Command cl -ErrorAction SilentlyContinue
+
+    # https://github.com/marketplace/actions/enable-developer-command-prompt
+    - uses: ilammy/msvc-dev-cmd@v1
+  
+    - name: Print cl.exe
       run: |   
         if((Get-Command cl -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find cl"}
         Get-Command cl -ErrorAction SilentlyContinue
@@ -31,14 +46,6 @@ jobs:
       with:
         # ninja version to download. Default: 1.10.0
         version: 1.10.0
-
-    # https://github.com/marketplace/actions/enable-developer-command-prompt
-    - uses: ilammy/msvc-dev-cmd@v1
-  
-    - name: Print cl.exe
-      run: |   
-        if((Get-Command cl -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find cl"}
-        Get-Command cl -ErrorAction SilentlyContinue
 
     - name: Print Ninja path
       run: |

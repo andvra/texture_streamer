@@ -56,9 +56,15 @@ target_include_directories(test-nvidia-codec
 )
 
 if(WIN32)
-	set(ALL_LIBS ${NV12_LIBS} CUDA::cuda_driver ${FFMPEG_LIBRARIES})
+	set(ALL_LIBS
+		${NV12_LIBS}
+		CUDA::cuda_driver
+		${FFMPEG_LIBRARIES})
 else()
-	set(ALL_LIBS ${NV12_LIBS} CUDA::cuda_driver PkgConfig::LIBAV)
+	set(ALL_LIBS
+		${NV12_LIBS}
+		CUDA::cuda_driver
+		PkgConfig::LIBAV)
 endif()
 
 target_link_libraries(test-nvidia-codec 
