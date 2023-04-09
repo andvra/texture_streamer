@@ -87,7 +87,7 @@ jobs:
     - name: Download and unzip vcpkg files
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       run: |
-        Invoke-WebRequest -Uri "https://file.io/360AjkJEFtY0"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/gK6TTtSKRKOp"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
