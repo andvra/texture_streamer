@@ -20,13 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
   
-    - run: $pwd
-    - run: $toppath = split-path . -leaf
-    - run: cd ..
-    - run: $pwd
-    - run: cd $toppath
-    - run: $pwd
-
     - name: Print cl.exe (before)
       run: |   
         if((Get-Command cl -ErrorAction SilentlyContinue) -eq $null) {echo "Did not find cl"}
@@ -56,7 +49,7 @@ jobs:
     - uses: xSAVIKx/artifact-exists-action@v0
       id: check-vcpkg-artifact-exists
       with:
-        name: 'vcpkg-zip'
+        name: 'assets-zip'
 
     - name: Checking for artifact existance
       run: echo "Does artifact exists? $env:ARTIFACT_EXISTS"
@@ -87,77 +80,46 @@ jobs:
       env:
         GC: ${{ toJSON(github) }}
         AO: ${{ toJSON(steps.check-vcpkg-artifact-exists.outputs) }}
+     
+    - uses: lukka/get-cmake@latest
+
 
     - name: Download and unzip vcpkg files
+      if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       run: |
-        Invoke-WebRequest -Uri "https://file.io/wSgGMF100wki"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/vGH82Y2TR4GJ"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
 
+    # See https://github.com/actions/upload-artifact
+    - uses: actions/upload-artifact@v3
+      if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
+      with:
+        name: assets-zip
+        path: assets.zip
+
+    # See https://github.com/actions/download-artifact
+    - uses: actions/download-artifact@v3
+      if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == true }}
+      with:
+        name: assets-zip
+        
+    # See https://github.com/marketplace/actions/action-zip
+    - uses: montudor/action-zip@v1
+      if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == true }}
+      with:
+        args: unzip -qq assets.zip -d ..
+
     - name: Create log file
       run: |
-        Get-ChildItem .. -Recurse | Out-File -FilePath .\mylog.txt
+        Get-ChildItem .. -Recurse | Out-File -FilePath .\all-files.txt
     
     - name: Archive log file
       uses: actions/upload-artifact@v3
       with:
-        name: mylog-file
-        path: .\mylog.txt
-      
-    - uses: lukka/get-cmake@latest
-    
-      # See https://github.com/marketplace/actions/run-vcpkg
-    #- name: Setup vcpkg (it does not install any package yet)
-    #  if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
-    #  uses: lukka/run-vcpkg@v11
-    #  with:
-    #    # This is the default location of the directory containing vcpkg sources.
-    #    # Change it to the right location if needed.
-    #    vcpkgDirectory: '${{ github.workspace }}/../vcpkg'
-
-    #    # If not using a submodule for vcpkg sources, this specifies which commit
-    #    # id must be checkout from a Git repo. 
-    #    # Note: it must not be set if using a Git submodule for vcpkg.
-    #    vcpkgGitCommitId: '7f59e0013648f0dd80377330b770b414032233cb'
-
-    #    # This is the glob expression used to locate the vcpkg.json. 
-    #    # Change it to match a single manifest file you want to use.
-    #    # Note: do not use `${{ github.context }}` to compose the value as it
-    #    # contains backslashes that would be misinterpreted. Instead
-    #    # compose a value relative to the root of the repository using
-    #    # `**/path/from/root/of/repo/to/vcpkg.json` to match the desired `vcpkg.json`.
-    #    vcpkgJsonGlob: 'vcpkg.json'
-
-    #    # This is only needed if the command `vcpkg install` must run at this step.
-    #    # Instead it is highly suggested to let `run-cmake` to run vcpkg later on
-    #    # using the vcpkg.cmake toolchain. The default is `false`.
-    #    runVcpkgInstall: true
-        
-    ## See https://github.com/marketplace/actions/action-zip
-    #- uses: montudor/action-zip@v1
-    #  if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
-    #  with:
-    #    args: zip -qq -r vcpkg.zip ../vcpkg
-        
-    ## See https://github.com/actions/upload-artifact
-    #- uses: actions/upload-artifact@v3
-    #  if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
-    #  with:
-    #    name: vcpkg-zip
-    #    path: vcpkg.zip
-
-    ## See https://github.com/actions/download-artifact
-    #- uses: actions/download-artifact@v3
-    #  if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == true }}
-    #  with:
-    #    name: vcpkg-zip
-        
-    ## See https://github.com/marketplace/actions/action-zip
-    #- uses: montudor/action-zip@v1
-    #  if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == true }}
-    #  with:
-    #    args: unzip -qq vcpkg.zip -d ../vcpkg
+        name: all-files
+        path: .\all-files.txt
       
       # See https://github.com/Jimver/cuda-toolkit
     - uses: Jimver/cuda-toolkit@v0.2.10
@@ -181,7 +143,6 @@ jobs:
           cmake -S . --preset=x64-debug
       env:
         CMAKE_TOOLCHAIN_FILE: ../vcpkg-ffmpeg/scripts/buildsystems/vcpkg.cmake
-        #NV12_SDK_ROOT: ../Video_Codec_SDK_12.0.16
 
     - name: Build
       # Build your program with the given configuration
@@ -191,7 +152,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build-files
-        path: .
+        path: out # Zip only the "out" folder - we don't need anything else
 
     #- name: Test
     #  working-directory: ${{github.workspace}}/build
