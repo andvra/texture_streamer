@@ -87,7 +87,7 @@ jobs:
     - name: Download and unzip vcpkg files
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       run: |
-        Invoke-WebRequest -Uri "https://file.io/kfOE0XJJTLou"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/efGMGhZuedzm"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
@@ -97,7 +97,7 @@ jobs:
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       with:
         name: assets-zip
-        path: ../assets.zip
+        path: ([System.IO.Path]::GetFullPath((Join-Path $pwd '../assets.zip'))) | out-string
 
     # See https://github.com/actions/download-artifact
     - uses: actions/download-artifact@v3
