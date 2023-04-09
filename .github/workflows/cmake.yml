@@ -87,7 +87,7 @@ jobs:
     - name: Download and unzip vcpkg files
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       run: |
-        Invoke-WebRequest -Uri "https://file.io/5IAG4ezPm1Yu"  -OutFile ../assets.zip
+        Invoke-WebRequest -Uri "https://file.io/kfOE0XJJTLou"  -OutFile ../assets.zip
         Expand-Archive ../assets.zip -DestinationPath ..
         Get-Location
         dir
@@ -96,8 +96,8 @@ jobs:
     - uses: actions/upload-artifact@v3
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == false }}
       with:
-        name: ../assets-zip
-        path: assets.zip
+        name: assets-zip
+        path: ../assets.zip
 
     # See https://github.com/actions/download-artifact
     - uses: actions/download-artifact@v3
@@ -110,7 +110,7 @@ jobs:
     - uses: montudor/action-zip@v1
       if: ${{ fromJson(steps.check-vcpkg-artifact-exists.outputs.exists) == true }}
       with:
-        args: unzip -qq assets.zip -d ..
+        args: unzip -qq ../assets.zip -d ..
 
     - name: Create log file
       run: |
