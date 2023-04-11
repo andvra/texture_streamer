@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <cstring>
 
 #include <cuviddec.h>
 #include <nvcuvid.h>
