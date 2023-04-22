@@ -3,6 +3,7 @@
 #include <map>
 #include <iostream>
 #include <cstring>
+#include <filesystem>
 
 #include <cuviddec.h>
 #include <nvcuvid.h>
@@ -71,7 +72,51 @@ CUresult get_decode_cababilities(CUVIDDECODECAPS& decode_capabilities);
  * @param video_parser Vide parser
  * @return Cuvid result code
 */
-CUresult create_video_parser(Decoder* decoder, void*& video_parser);
+CUresult create_video_parser(Decoder* decoder);
+
+std::string get_video_codec_name(cudaVideoCodec codec_id) {
+	std::map<cudaVideoCodec, std::string> codecs = {
+		{ cudaVideoCodec_MPEG1,     "MPEG-1"       },
+		{ cudaVideoCodec_MPEG2,     "MPEG-2"       },
+		{ cudaVideoCodec_MPEG4,     "MPEG-4 (ASP)" },
+		{ cudaVideoCodec_VC1,       "VC-1/WMV"     },
+		{ cudaVideoCodec_H264,      "AVC/H.264"    },
+		{ cudaVideoCodec_JPEG,      "M-JPEG"       },
+		{ cudaVideoCodec_H264_SVC,  "H.264/SVC"    },
+		{ cudaVideoCodec_H264_MVC,  "H.264/MVC"    },
+		{ cudaVideoCodec_HEVC,      "H.265/HEVC"   },
+		{ cudaVideoCodec_VP8,       "VP8"          },
+		{ cudaVideoCodec_VP9,       "VP9"          },
+		{ cudaVideoCodec_AV1,       "AV1"          },
+		{ cudaVideoCodec_NumCodecs, "Invalid"      },
+		{ cudaVideoCodec_YUV420,    "YUV  4:2:0"   },
+		{ cudaVideoCodec_YV12,      "YV12 4:2:0"   },
+		{ cudaVideoCodec_NV12,      "NV12 4:2:0"   },
+		{ cudaVideoCodec_YUYV,      "YUYV 4:2:2"   },
+		{ cudaVideoCodec_UYVY,      "UYVY 4:2:2"   }
+	};
+
+	if (codecs.count(codec_id) > 0) {
+		return codecs[codec_id];
+	}
+
+	return "Unknown";
+}
+
+std::string get_chroma_format_name(cudaVideoChromaFormat chroma_format_id) {
+	std::map<cudaVideoChromaFormat, std::string> chroma_formats = {
+		{ cudaVideoChromaFormat_Monochrome, "YUV 400 (Monochrome)" },
+		{ cudaVideoChromaFormat_420,        "YUV 420"              },
+		{ cudaVideoChromaFormat_422,        "YUV 422"              },
+		{ cudaVideoChromaFormat_444,        "YUV 444"              }
+	};
+
+	if (chroma_formats.count(chroma_format_id) > 0) {
+		return chroma_formats[chroma_format_id];
+	}
+
+	return "Unknown";
+}
 
 /**
  * @brief See definition at 433 in nvcuvid.h. There, it's called PFNVIDSEQUENCECALLBACK
@@ -81,6 +126,44 @@ CUresult create_video_parser(Decoder* decoder, void*& video_parser);
 */
 int sequence_callback_proc(void* user_data, CUVIDEOFORMAT* format) {
 	Decoder* decoder = static_cast<Decoder*>(user_data);
+	std::stringstream ss;
+
+	ss << "Video Input Information" << std::endl
+		<< "\tCodec        : " << get_video_codec_name(format->codec) << std::endl
+		<< "\tFrame rate   : " << format->frame_rate.numerator << "/" << format->frame_rate.denominator
+		<< " = " << 1.0 * format->frame_rate.numerator / format->frame_rate.denominator << " fps" << std::endl
+		<< "\tSequence     : " << (format->progressive_sequence ? "Progressive" : "Interlaced") << std::endl
+		<< "\tCoded size   : [" << format->coded_width << ", " << format->coded_height << "]" << std::endl
+		<< "\tDisplay area : [" << format->display_area.left << ", " << format->display_area.top << ", "
+		<< format->display_area.right << ", " << format->display_area.bottom << "]" << std::endl
+		<< "\tChroma       : " << get_chroma_format_name(format->chroma_format) << std::endl
+		<< "\tBit depth    : " << format->bit_depth_luma_minus8 + 8;
+
+	std::cout << ss.str() << std::endl;
+
+	CUVIDDECODECAPS decode_caps;
+	decode_caps.eCodecType = format->codec;
+	decode_caps.eChromaFormat = format->chroma_format;
+	decode_caps.nBitDepthMinus8 = format->bit_depth_luma_minus8;
+
+	cuCtxPushCurrent(cuda_context);
+	cuvidGetDecoderCaps(&decode_caps);
+	cuCtxPopCurrent(nullptr);
+
+
+	std::map<std::string, bool> error_conditions = {
+		{ "Codec not supported on this GPU", !decode_caps.bIsSupported },
+		{ "Resolution not supported", (format->coded_width > decode_caps.nMaxWidth) || (format->coded_height > decode_caps.nMaxHeight) },
+		{ "Macroblock (MBCount) not supported", (format->coded_width >> 4) * (format->coded_height >> 4) > decode_caps.nMaxMBCount}
+	};
+
+	for (auto [msg, c] : error_conditions) {
+		if (c) {
+			std::cout << msg << std::endl;
+			return format->min_num_decode_surfaces;
+		}
+	}
+
 
 	return format->min_num_decode_surfaces;
 }
@@ -120,16 +203,16 @@ int display_callback_proc(void* user_data, CUVIDPARSERDISPINFO* display_info) {
 	videoProcessingParameters.unpaired_field = display_info->repeat_first_field < 0;
 	videoProcessingParameters.output_stream = cuvid_stream;
 
-	cuCtxPushCurrent(cuda_context);
+	auto res = cuCtxPushCurrent(cuda_context);
 	
-	cuvidMapVideoFrame(video_decoder, display_info->picture_index, &source_frame_ptr,
+	res = cuvidMapVideoFrame(video_decoder, display_info->picture_index, &source_frame_ptr,
 		&source_pitch, &videoProcessingParameters);
 
 	CUVIDGETDECODESTATUS DecodeStatus;
 	memset(&DecodeStatus, 0, sizeof(DecodeStatus));
-	CUresult result = cuvidGetDecodeStatus(video_decoder, display_info->picture_index, &DecodeStatus);
+	res = cuvidGetDecodeStatus(video_decoder, display_info->picture_index, &DecodeStatus);
 
-	if (result == CUDA_SUCCESS && (DecodeStatus.decodeStatus == cuvidDecodeStatus_Error || DecodeStatus.decodeStatus == cuvidDecodeStatus_Error_Concealed))
+	if (res == CUDA_SUCCESS && (DecodeStatus.decodeStatus == cuvidDecodeStatus_Error || DecodeStatus.decodeStatus == cuvidDecodeStatus_Error_Concealed))
 	{
 		//printf("Decode Error occurred for picture %d\n", m_nPicNumInDecodeOrder[display_info->picture_index]);
 		std::cout << "Decode error occured for picture with picture index (not in order) " << display_info->picture_index << std::endl;
@@ -137,22 +220,30 @@ int display_callback_proc(void* user_data, CUVIDPARSERDISPINFO* display_info) {
 		return 0;
 	}
 
+	uint8_t* decoded_frame = nullptr;
+
 	auto frame_size = (video_format.chroma_format == cudaVideoChromaFormat_444) ? source_pitch * (3 * video_format.height) :
 		source_pitch * (video_format.height + (video_format.height + 1) / 2);
 	// use CUDA based Device to Host memcpy
-	result = cuMemAllocHost((void**)&host_pointer, frame_size);
+	res = cuMemAllocHost((void**)&host_pointer, frame_size);
 
 	if (host_pointer)
 	{
-		result = cuMemcpyDtoH(host_pointer, source_frame_ptr, frame_size);
+		res = cuMemcpyDtoH(host_pointer, source_frame_ptr, frame_size);
+		std::filesystem::path full_path("c:\\temp\\yuv.yuv");
+		auto xx = full_path.parent_path();
+		auto yy = std::filesystem::is_directory(xx);
+		if (!yy) {
+			std::filesystem::create_directories(xx);
+		}
+
+		FILE* fp = fopen(full_path.string().c_str(), "wb");
+		auto num_written = fwrite(host_pointer, 1, frame_size, fp);
+		fclose(fp);
+
+		res = cuvidUnmapVideoFrame(video_decoder, source_frame_ptr);
+		cuMemFreeHost(host_pointer);
 	}
-
-	//FILE* fp = fopen("c:\\temp\\frame.txt", "wb");
-	//auto num_written = fwrite(host_pointer, 1, frame_size, fp);
-	//fclose(fp);
-
-	result = cuvidUnmapVideoFrame(video_decoder, source_frame_ptr);
-	cuMemFreeHost(host_pointer);
 
 	return 1;
 }
@@ -219,7 +310,7 @@ bool Decoder::init(const Stream_info& stream_info) {
 		{"Getting device context",			[&context_flags]() { return cuCtxCreate_v2(&cuda_context, context_flags, cuda_device); }},
 		{"Getting API version",				[&api_version]() { return cuCtxGetApiVersion(cuda_context, &api_version); }},
 		{"Printing API version",			[&api_version]() { std::cout << "API version: " << api_version << std::endl; return CUDA_SUCCESS; }},
-		{"Creating video parser",			[this]() { return create_video_parser(this, video_parser); }},
+		{"Creating video parser",			[this]() { return create_video_parser(this); }},
 		{"Getting decoder capabilities",	[this]() { return get_decode_cababilities(decode_capabilities); }},
 		{"Creating decoder",				[this]() { return create_decoder(); }}
 	};
@@ -256,7 +347,7 @@ void print_device_info() {
 	}
 }
 
-CUresult create_video_parser(Decoder* decoder, void*& video_parser) {
+CUresult create_video_parser(Decoder* decoder) {
 	CUVIDPARSERPARAMS params = {};
 
 	params.CodecType = video_format.video_codec;
