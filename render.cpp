@@ -69,7 +69,7 @@ void init_triangle() {
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
-	const char* fragment_shader_source = "#version 330 core\n"
+	const char* fragment_shader_source = "#version 430 core\n"
 		"out vec4 FragColor;\n"
 		"uniform vec4 custom_color;"
 		"void main()\n"
