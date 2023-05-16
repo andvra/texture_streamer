@@ -3,6 +3,7 @@
 #include "decoder.h"
 #include "demuxer.h"
 #include "stream_info.h"
+#include "render.h"
 
 int main()
 {
@@ -12,6 +13,9 @@ int main()
 	Demuxer demuxer;
 	Packet_data packet_data;
 	Decoder decoder;
+
+	main_loop();
+	return 0;
 
 	if (!demuxer.init(input_file, &stream_info)) {
 		return -1;

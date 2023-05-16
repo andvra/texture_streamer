@@ -3,6 +3,10 @@
 project ("test-nvidia-codec")
 
 find_package(CUDAToolkit REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(OpenGL REQUIRED)
+
 if(WIN32)
 	find_package(FFMPEG REQUIRED)
 else()
@@ -46,7 +50,7 @@ message(STATUS "Found NV12 SDK at: ${NV12_SDK_ROOT}")
 # Add source to this project's executable.
 add_executable (test-nvidia-codec)
 
-target_sources(test-nvidia-codec PRIVATE "main.cpp" "decoder.cpp" "demuxer.cpp" "utils.cpp")
+target_sources(test-nvidia-codec PRIVATE "main.cpp" "decoder.cpp" "demuxer.cpp" "utils.cpp" "render.cpp")
 
 target_include_directories(test-nvidia-codec 
 	PRIVATE
@@ -55,21 +59,28 @@ target_include_directories(test-nvidia-codec
 		${FFMPEG_INCLUDE_DIRS}
 )
 
+set(COMMON_LIBS
+	${NV12_LIBS}
+	CUDA::cuda_driver
+	glad::glad
+	glfw
+	OpenGL::GL
+)
+
 if(WIN32)
-	set(ALL_LIBS
-		${NV12_LIBS}
-		CUDA::cuda_driver
-		${FFMPEG_LIBRARIES})
+	set(CUSTOM_OS_LIBS
+		${FFMPEG_LIBRARIES}
+	)
 else()
-	set(ALL_LIBS
-		${NV12_LIBS}
-		CUDA::cuda_driver
-		PkgConfig::LIBAV)
+	set(CUSTOM_OS_LIBS
+		PkgConfig::LIBAV
+	)
 endif()
 
 target_link_libraries(test-nvidia-codec 
 	PRIVATE
-		${ALL_LIBS}
+		${COMMON_LIBS}
+		${CUSTOM_OS_LIBS}
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
